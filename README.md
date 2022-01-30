@@ -1,4 +1,4 @@
-###### PIXIE DAEMON - Using THE Raspberry Pi as a nixie clock
+###### PIXIE DAEMON - Using the Raspberry Pi as a nixie clock
 
 I was given a set of nixie tubes long time ago as a gift and had a
 design for a clock but never got to the point of laying it out. I found
@@ -114,9 +114,9 @@ LEDs. The library needs to be downloaded and built on the pi.
 Now install LED library and build using the following:
 
 ```
-sudo apt-get --y install gcc make cmake binutils git i2c-tools
-cd \$HOME
-git clone <https://github.com/jgarff/rpi_ws281x.git>
+sudo apt-get -y install gcc make cmake binutils git i2c-tools
+cd $HOME
+git clone https://github.com/jgarff/rpi_ws281x.git
 cd rpi-ws281x
 mkdir build
 cd build
@@ -127,9 +127,9 @@ sudo make install
 
 Next install the json parser and nixie daemon code and build:
 ```
-cd \$HOME
-sudo git clone <https://github.com/zserge/jsmn.git>
-sudo git clone <https://github.com/alkgrove/Pixie-Daemon.git>
+cd $HOME
+sudo git clone https://github.com/zserge/jsmn.git
+sudo git clone https://github.com/alkgrove/Pixie-Daemon.git
 cd Pixie-Daemon
 sudo make
 sudo make install
@@ -139,10 +139,12 @@ sudo systemctl daemon-reload
 ##### Setting UP THE CLOCK CHIP
 
 Connect the Pi, shield and Nixie board together and power up. Open up a
-terminal to the pi and try
+terminal to the pi and try:
+```
 
-**i2cdetect -y 1**
+i2cdetect -y 1
 
+```
 There should be a single entry at 68, the rest are \--. This is the 7
 bit hex slave address for the RTC and shows that the pi can see the
 clock.
@@ -152,13 +154,18 @@ Most of the following is pulled from
 https://learn.adafruit.com/adding-a-real-time-clock-to-raspberry-pi/set-rtc-time
 
 edit /boot/config.txt with nano:
+```
 
-**sudo nano /boot/config.txt**
+sudo nano /boot/config.txt
+
+```
 
 and add the line at the end of the file:
+```
 
-**dtoverlay=i2c-rtc,ds3231**
+dtoverlay=i2c-rtc,ds3231
 
+```
 Now we need to get rid of the fake-hwclock with the following commands:
 
 ```
@@ -172,60 +179,70 @@ Next edit the file /lib/udev/hwclock-set and comment out the lines with
 #\'s:
 
 ```
+
 if \[ -e /run/systemd/system \] ; then
 	exit 0
 fi
+
 ```
 
 should be
 
 ```
+
 #if \[ -e /run/systemd/system \] ; then
 \# 	exit 0
 #fi
+
 ```
 
 and comment out the lines:
+```
 
-**/sbin/hwclock \--rtc=\$dev \--systz \--badyear**
+/sbin/hwclock \--rtc=\$dev \--systz \--badyear
 
+```
 and
+```
 
-**/sbin/hwclock \--rtc=\$dev --systz**
+/sbin/hwclock \--rtc=\$dev --systz**
 
+```
 as:
+```
 
-**#/sbin/hwclock \--rtc=\$dev \--systz --badyear**
+#/sbin/hwclock \--rtc=\$dev \--systz --badyear
 
+```
 and
+```
 
-**#/sbin/hwclock \--rtc=\$dev --systz**
+#/sbin/hwclock \--rtc=\$dev --systz
 
+```
 Reboot and test with date:
+```
 
-**date**
+date
 
+```
 this should produce the right date and time. Next write this to the
 hwclock with
-
 ```
+
 sudo hwclock -w
 sudo hwclock -r
-```
 
+```
 I believe the script you changed does this automatically at some point,
 this just checks that it works now.
 
-You can further check things with:
-
-**sudo timedatectl status**
+You can further check things with sudo timedatectl status
 
 It should show RTC time with date time which means it\'s working and it
 will say n/a if still on fake-hwclock.
 
-You can further check the NTP servers that are queried for the time with
-
-**sudo timedatectl show-timesync**
+You  check the NTP servers that are queried for the time with sudo timedatectl show-timesync.
 
 The NTP server is what gets queried over the network to get and set the
 correct Universal time. Normally these go to a pool of servers such as
@@ -265,24 +282,22 @@ slow need to be in 25millisecond increments.
 
 I would suggest starting the display using the command line especially
 if trying a new LED color table. This is done with the command:
+```
 
-**/usr/local/bin/pixied**
+/usr/local/bin/pixied
 
+```
 Ctrl-c can be used to exit.
 
-So the first time starting the daemon, let's set it up so it starts on
-boot:
+Do the following one time so the daemon starts on boot:
+```
 
-**sudo systemctl enabled pixied**
+sudo systemctl enabled pixied
 
-The nixie clock can be started with:
+```
 
-**sudo service pixied start**
+The nixie clock can be started manually with **sudo service pixied start**.
 
-If you need to stop the Nixie Clock use
+Manually stop the daemon with **sudo service pixied stop**.
 
-**sudo service pixied stop**
-
-You can see the status with
-
-**sudo systemctl status pixied**
+To see the daemon status use **sudo systemctl status pixied**.
