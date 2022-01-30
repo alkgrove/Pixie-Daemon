@@ -117,7 +117,7 @@ Now install LED library and build using the following:
 sudo apt-get -y install gcc make cmake binutils git i2c-tools
 cd $HOME
 git clone https://github.com/jgarff/rpi_ws281x.git
-cd rpi-ws281x
+cd rpi_ws281x
 mkdir build
 cd build
 cmake --D build_SHARED=OFF --D BUILD_TEST=ON ..
@@ -284,7 +284,7 @@ I would suggest starting the display using the command line especially
 if trying a new LED color table. This is done with the command:
 ```
 
-/usr/local/bin/pixied
+sudo /usr/local/bin/pixied
 
 ```
 Ctrl-c can be used to exit.
@@ -292,12 +292,12 @@ Ctrl-c can be used to exit.
 Do the following one time so the daemon starts on boot:
 ```
 
-sudo systemctl enabled pixied
+sudo systemctl enable pixied
 
 ```
 
 The nixie clock can be started manually with **sudo service pixied start**.
 
-Manually stop the daemon with **sudo service pixied stop**.
+Manually stop the daemon with **sudo service pixied stop**. This may take a minute or more.
 
 To see the daemon status use **sudo systemctl status pixied**.
