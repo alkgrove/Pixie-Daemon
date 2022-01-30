@@ -55,8 +55,8 @@ install:
 	@test -f /usr/local/etc/LEDcolor.json || ${CP} -f assets/default.json /usr/local/etc/LEDcolor.json
 
 uninstall:
-	systemctl pixied.service stop
-	systemctl pixied.service disable
+	service pixied stop
+	systemctl disable pixied
 	${RM} -f /usr/local/bin/${TARGET}
 	${RM} -f /etc/systemd/system/pixied.service
 	${RM} -f /usr/local/etc/LEDcolor.json
