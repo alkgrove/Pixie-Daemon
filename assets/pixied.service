@@ -1,0 +1,12 @@
+﻿[Unit]
+Description=Pixie Daemon
+After=
+
+[Service]
+Type=forking
+Restart=always
+RestartSec=10
+ExecStart=/usr/local/bin/pixie --daemon
+
+[Install]
+WantedBy=multi-user.target
