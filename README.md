@@ -180,7 +180,7 @@ Next edit the file /lib/udev/hwclock-set and comment out the lines with
 
 ```
 
-if \[ -e /run/systemd/system \] ; then
+if [ -e /run/systemd/system ] ; then
 	exit 0
 fi
 
@@ -190,8 +190,8 @@ should be
 
 ```
 
-#if \[ -e /run/systemd/system \] ; then
-\# 	exit 0
+#if [ -e /run/systemd/system ] ; then
+# 	exit 0
 #fi
 
 ```
@@ -199,25 +199,25 @@ should be
 and comment out the lines:
 ```
 
-/sbin/hwclock \--rtc=\$dev \--systz \--badyear
+/sbin/hwclock --rtc=$dev --systz --badyear
 
 ```
 and
 ```
 
-/sbin/hwclock \--rtc=\$dev --systz**
+/sbin/hwclock --rtc=$dev --systz
 
 ```
 as:
 ```
 
-#/sbin/hwclock \--rtc=\$dev \--systz --badyear
+#/sbin/hwclock --rtc=\$dev --systz --badyear
 
 ```
 and
 ```
 
-#/sbin/hwclock \--rtc=\$dev --systz
+#/sbin/hwclock --rtc=$dev --systz
 
 ```
 Reboot and test with date:
