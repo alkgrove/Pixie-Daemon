@@ -1,6 +1,6 @@
 # makefile for testing
 
-TARGET = pixie
+TARGET = pixied
 #DEBUG=1
 REV="1.00"
 APP="Pixie Daemon"
@@ -16,6 +16,7 @@ OBJDIR=bin/
 INCDIR=inc/
 INC = ./inc
 INC += /usr/local/include/ws2811
+INC += ../jsmn
 VPATH = ./src
 
 INCLUDES=${patsubst %,-I%,${INC}}
@@ -31,6 +32,7 @@ endif
 CC=gcc
 RM=rm
 CP=cp
+CHMOD=chmod
 
 LIB = -pthread -lm /usr/local/lib/libws2811.a
 
@@ -38,8 +40,7 @@ all: ${OBJDIR} ${OBJDIR}${TARGET}
 
 ${OBJDIR}:
 	@test -d ${OBJDIR} || mkdir ${OBJDIR}
-	@test -d ~/jsmn || echo "Can't find jsmn directory needed for this project, see readme."
-	@cp -f ~/jsmn/jsmn.h ${INCDIR}
+	@test -d ../jsmn || echo "Can't find jsmn directory needed for this project, see readme."
 
 ${OBJDIR}%.o : %.c
 	${CC} ${CFLAGS} ${DEFS} ${INCLUDES} $< -o ${@}
@@ -48,9 +49,17 @@ ${OBJDIR}${TARGET}: $(addprefix ${OBJDIR},${OBJ})
 	${CC}  $(filter %.o %.a, ${^})  ${LIB} -o ${@}
 
 install:
-	${CP} -f bin/pixie /usr/local/bin/
+	${CP} -f ${OBJDIR}${TARGET} /usr/local/bin/
 	${CP} -f assets/pixied.service /etc/systemd/system
+	${CHMOD} 664 /etc/systemd/system/pixied.service
 	@test -f /usr/local/etc/LEDcolor.json || ${CP} -f assets/default.json /usr/local/etc/LEDcolor.json
+
+uninstall:
+	systemctl pixied.service stop
+	systemctl pixied.service disable
+	${RM} -f /usr/local/bin/${TARGET}
+	${RM} -f /etc/systemd/system/pixied.service
+	${RM} -f /usr/local/etc/LEDcolor.json
 
 clean:
 	${RM} -rf ${OBJDIR} ${wildcard *~}
