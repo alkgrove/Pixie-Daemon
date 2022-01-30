@@ -86,6 +86,7 @@ dope or acrylic conformal coat to stress relief the wire from detaching
 from this trace. Connect the other end to X1 pin 12.
 
 ![image](https://user-images.githubusercontent.com/41930136/151699555-cf7a6192-eeac-4915-b503-66ee9e6cf670.png)
+
 You could potentially work around cutting the traces but using the button or
 enabling GPIO16 will make things not work well.
 
@@ -112,25 +113,28 @@ LEDs. The library needs to be downloaded and built on the pi.
 
 Now install LED library and build using the following:
 
-**sudo apt-get --y install gcc make cmake binutils git i2c-tools**
-**cd \$HOME**
-**git clone <https://github.com/jgarff/rpi_ws281x.git>**
-**cd rpi-ws281x**
-**mkdir build**
-**cd build**
-**cmake --D build_SHARED=OFF --D BUILD_TEST=ON ..**
-**cmake --build .**
-**sudo make install**
+```
+sudo apt-get --y install gcc make cmake binutils git i2c-tools
+cd \$HOME
+git clone <https://github.com/jgarff/rpi_ws281x.git>
+cd rpi-ws281x
+mkdir build
+cd build
+cmake --D build_SHARED=OFF --D BUILD_TEST=ON ..
+cmake --build .
+sudo make install
+```
 
 Next install the json parser and nixie daemon code and build:
-
-**cd \$HOME**
-**sudo git clone <https://github.com/zserge/jsmn.git>**
-**sudo git clone <https://github.com/alkgrove/Pixie-Daemon.git>**
-**cd Pixie-Daemon**
-**sudo make**
-**sudo make install**
-**sudo systemctl daemon-reload**
+```
+cd \$HOME
+sudo git clone <https://github.com/zserge/jsmn.git>
+sudo git clone <https://github.com/alkgrove/Pixie-Daemon.git>
+cd Pixie-Daemon
+sudo make
+sudo make install
+sudo systemctl daemon-reload
+```
 
 ##### Setting UP THE CLOCK CHIP
 
@@ -157,23 +161,29 @@ and add the line at the end of the file:
 
 Now we need to get rid of the fake-hwclock with the following commands:
 
-**sudo apt-get -y remove fake-hwclock**
-**sudo update-rc.d -f fake-hwclock remove**
-**sudo systemctl stop fake-hwclock**
-**sudo systemctl disable fake-hwclock**
+```
+sudo apt-get -y remove fake-hwclock
+sudo update-rc.d -f fake-hwclock remove
+sudo systemctl stop fake-hwclock
+sudo systemctl disable fake-hwclock
+```
 
 Next edit the file /lib/udev/hwclock-set and comment out the lines with
 #\'s:
 
-**if \[ -e /run/systemd/system \] ; then**
-**exit 0**
-**fi**
+```
+if \[ -e /run/systemd/system \] ; then
+	exit 0
+fi
+```
 
 should be
 
-**#if \[ -e /run/systemd/system \] ; then**
-**\# exit 0**
-**#fi**
+```
+#if \[ -e /run/systemd/system \] ; then
+\# 	exit 0
+#fi
+```
 
 and comment out the lines:
 
@@ -198,8 +208,10 @@ Reboot and test with date:
 this should produce the right date and time. Next write this to the
 hwclock with
 
-**sudo hwclock -w**
-**sudo hwclock -r**
+```
+sudo hwclock -w
+sudo hwclock -r
+```
 
 I believe the script you changed does this automatically at some point,
 this just checks that it works now.
