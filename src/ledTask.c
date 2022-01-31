@@ -104,7 +104,7 @@ void *ledTask(void *threadid)
     } 
 	ledrollhead = parseconfig();
     if (ledrollhead == NULL) {
-        fprintf(stderr, "configuration file not valid\n");
+        errprint("configuration file not valid\n");
         notifyToTerminate();
         pthread_exit((void *)EXIT_FAILURE);   
     }
