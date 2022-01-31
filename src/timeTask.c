@@ -145,7 +145,6 @@ void *timeTask(void *threadid)
 
     testNixie(spifd, gpiomap, LE); // simple sequence of all nixies to test
     clock_gettime(CLOCK_REALTIME, &lastTime);
-       if (isDaemon()) errprint("checking error print");
     while (!done) {
         /* Wait for seconds to change */
         do {

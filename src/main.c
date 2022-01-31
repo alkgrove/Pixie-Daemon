@@ -174,6 +174,8 @@ int main(int argc, char *argv[])
   	} else if (pthread_create(&ledThread, &attributes, ledTask, NULL)) {
         errprint("clock LED unable to create thread");
   	} else {
+  	       if (daemonmode) errprint("checking error print");
+
     if (daemonmode) syslog(LOG_INFO, "Starting threads");
 		pthread_join(timeThread, NULL);
     	pthread_join(ledThread, NULL);
