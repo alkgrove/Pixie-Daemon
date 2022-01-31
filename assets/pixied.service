@@ -4,7 +4,7 @@ After=
 
 [Service]
 Type=forking
-Restart=always
+Restart=on-failure
 RestartSec=10
 ExecStart=/usr/local/bin/pixie --daemon
 
