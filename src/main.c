@@ -50,6 +50,10 @@ pthread_t timeThread;
 pthread_t ledThread;
 static bool daemonmode = false;
 
+bool isDaemon(void) {
+    return daemonmode;
+}
+
 void errprint(const char *format, ...)
 {
     va_list args;
