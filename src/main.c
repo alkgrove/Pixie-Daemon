@@ -69,6 +69,9 @@ void errprint(const char *format, ...)
     
 void terminator_handler(int signum)
 {
+    if (daemonmode) {
+        syslog(LOG_INFO, "Received signum %d, terminating", signum);
+    }
     notifyToTerminate();
 }
 
