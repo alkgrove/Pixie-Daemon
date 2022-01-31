@@ -104,7 +104,7 @@ void setNixie(int fd, void *map, int pin, bool colon, char *str) {
  */
 
 void testNixie(int fd, void *map, int pin) {
-    char display[7] = "123456";
+    char display[7] = "000000";
     bool colon = false;
     struct timespec delay = {.tv_sec = 0, .tv_nsec = 500000000L };
     for (int i = 0; i < 10; i++) {
@@ -145,6 +145,7 @@ void *timeTask(void *threadid)
 
     testNixie(spifd, gpiomap, LE); // simple sequence of all nixies to test
     clock_gettime(CLOCK_REALTIME, &lastTime);
+        if (done && daemonmode) syslog(LOG_INFO, "done received before starting time");
     while (!done) {
         /* Wait for seconds to change */
         do {
@@ -167,6 +168,8 @@ void *timeTask(void *threadid)
             assert((rv == 0) || (rv == EINTR));
         } while (rv == EINTR);    
         done = isTerminate();
+        if (done && daemonmode) syslog(LOG_INFO, "done received time task");
+
     } 
     setNixie(spifd, gpiomap, LE, false, NULL); // clear nixie to clean up
 
