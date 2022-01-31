@@ -59,6 +59,7 @@ void errprint(const char *format, ...)
     va_list args;
     
     va_start( args, format );
+        syslog(LOG_INFO, "errprint");
     if (daemonmode) {
         syslog(LOG_ERR, format, args);
         syslog(LOG_INFO, "errprint in daemonmode");
