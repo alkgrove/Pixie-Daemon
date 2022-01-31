@@ -61,7 +61,9 @@ void errprint(const char *format, ...)
     va_start( args, format );
     if (daemonmode) {
         syslog(LOG_ERR, format, args);
+        syslog(LOG_INFO, "errprint in daemonmode");
     } else {
+        syslog(LOG_INFO, "errprint not daemonmode");
         fprintf(stderr, format, args );
         fprintf(stderr, "\n");
     }
@@ -168,15 +170,14 @@ int main(int argc, char *argv[])
     pthread_attr_init(&attributes);
     pthread_attr_setdetachstate(&attributes, PTHREAD_CREATE_JOINABLE);
     /* get config file - if can't find file or has errors, program will exit from parseconfig() */
-    if (daemonmode) syslog(LOG_INFO, "Starting nixie clock daemon");
     if (pthread_create(&timeThread, &attributes, timeTask, NULL)){
         errprint("clock time unable to create thread");
   	} else if (pthread_create(&ledThread, &attributes, ledTask, NULL)) {
         errprint("clock LED unable to create thread");
   	} else {
-  	       if (daemonmode) errprint("checking error print");
+    errprint("checking error print");
 
-    if (daemonmode) syslog(LOG_INFO, "Starting threads");
+        if (daemonmode) syslog(LOG_INFO, "Starting nixie clock daemon");
 		pthread_join(timeThread, NULL);
     	pthread_join(ledThread, NULL);
   	}
