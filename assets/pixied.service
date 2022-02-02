@@ -3,10 +3,10 @@ Description=Pixie Daemon
 After=
 
 [Service]
-Type=forking
+Type=simple
 Restart=on-failure
 RestartSec=10
-ExecStart=/usr/local/bin/pixie --daemon
+ExecStart=/usr/local/bin/pixied
 
 [Install]
 WantedBy=multi-user.target

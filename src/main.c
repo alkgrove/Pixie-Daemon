@@ -43,14 +43,13 @@
  */
  /* global - not to be change anywhere except in main */
 terminate_t terminate = {.mutex = PTHREAD_MUTEX_INITIALIZER, .kill = false};
+static struct sigaction new_action, old_action;
+
 ledrollhead_t *ledrollhead = NULL;
 /* non-global */
 pthread_attr_t attributes;
 pthread_t timeThread;
 pthread_t ledThread;
-
-
-
     
 void terminator_handler(int signum)
 {
@@ -60,14 +59,25 @@ void terminator_handler(int signum)
 static struct sigaction new_action, old_action;
 
 int main(int argc, char *argv[])
-{	        
+{	 
+ 	new_action.sa_handler = terminator_handler;
+    sigemptyset(&new_action.sa_mask);
+    new_action.sa_flags = 0;
+    sigaction (SIGINT, NULL, &old_action);
+    if (old_action.sa_handler != SIG_IGN) sigaction (SIGINT, &new_action, NULL);
+    sigaction (SIGHUP, NULL, &old_action);
+    if (old_action.sa_handler != SIG_IGN) sigaction (SIGHUP, &new_action, NULL);
+    sigaction (SIGTERM, NULL, &old_action);
+    if (old_action.sa_handler != SIG_IGN) sigaction (SIGTERM, &new_action, NULL);
+       
     pthread_attr_init(&attributes);
     pthread_attr_setdetachstate(&attributes, PTHREAD_CREATE_JOINABLE);
-    /* get config file - if can't find file or has errors, program will exit from parseconfig() */
-    if (pthread_create(&timeThread, &attributes, timeTask, NULL)){
+    if (pthread_create(&timeThread, &attributes, timeTask, NULL)) {
         fprintf(stderr,"clock time unable to create thread\n");
+        return 1;
   	} else if (pthread_create(&ledThread, &attributes, ledTask, NULL)) {
         fprintf(stderr,"clock LED unable to create thread\n");
+        return 1;
   	} else {
 		pthread_join(timeThread, NULL);
     	pthread_join(ledThread, NULL);

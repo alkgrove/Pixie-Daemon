@@ -167,7 +167,6 @@ void *timeTask(void *threadid)
             assert((rv == 0) || (rv == EINTR));
         } while (rv == EINTR);    
         done = isTerminate();
-        if (done && isDaemon()) syslog(LOG_INFO, "done received time task");
     } 
     setNixie(spifd, gpiomap, LE, false, NULL); // clear nixie to clean up
 }
