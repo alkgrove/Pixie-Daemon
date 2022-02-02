@@ -98,13 +98,13 @@ void *ledTask(void *threadid)
     ledrollhead_t *ledrollhead;
     
     if ((rv = ws2811_init(&ledmodule)) != WS2811_SUCCESS) {
-        errprint("ws2811_init failed: %s", ws2811_get_return_t_str(rv));
+        fprintf(stderr,"ws2811_init failed: %s\n", ws2811_get_return_t_str(rv));
         notifyToTerminate();
         pthread_exit((void *)EXIT_FAILURE);
     } 
 	ledrollhead = parseconfig();
     if (ledrollhead == NULL) {
-        errprint("configuration file not valid\n");
+        fprintf(stderr,"configuration file not valid\n");
         notifyToTerminate();
         pthread_exit((void *)EXIT_FAILURE);   
     }
@@ -117,7 +117,7 @@ void *ledTask(void *threadid)
             delay.tv_nsec = (p->delay % 1000) * 1000000L;
             for (int i = 0; i < LEDCOUNT; i++) ledmodule.channel[0].leds[i] = p->color[i];
             if ((rv = ws2811_render(&ledmodule)) != WS2811_SUCCESS) {
-    	        errprint("ws2811_render failed: %s\n", ws2811_get_return_t_str(rv));
+    	        fprintf(stderr,"ws2811_render failed: %s\n", ws2811_get_return_t_str(rv));
                 notifyToTerminate();
                 break;
             }
@@ -129,7 +129,7 @@ void *ledTask(void *threadid)
                     ledmodule.channel[0].leds[j] = interpolateRGB(p->color[j], nextp->color[j], i, max);
                 }
                 if ((rv = ws2811_render(&ledmodule)) != WS2811_SUCCESS) {
-    	            errprint("ws2811_render failed: %s\n", ws2811_get_return_t_str(rv));
+    	            fprintf(stderr,"ws2811_render failed: %s\n", ws2811_get_return_t_str(rv));
                     notifyToTerminate();
                     break;
                 }
@@ -141,7 +141,7 @@ void *ledTask(void *threadid)
     /* to finish, turn off all LEDs */
     for (int i = 0; i < LEDCOUNT; i++) ledmodule.channel[0].leds[i] = 0;
     if ((rv = ws2811_render(&ledmodule)) != WS2811_SUCCESS) {
-    	errprint("ws2811_render failed: %s\n", ws2811_get_return_t_str(rv));
+    	fprintf(stderr,"ws2811_render failed: %s\n", ws2811_get_return_t_str(rv));
         notifyToTerminate();
     }
     ws2811_fini(&ledmodule);

@@ -15,7 +15,7 @@ I wanted the Raspberry Pi because Linux makes a pretty good clock. it
 supports NTP to set and keep the time accurate and a timezone database.
 Once it is set up, I shouldn't have to set the time again and it should
 keep good time. The Pi does has some disadvantages. It isn't well suited
-to time critical IO but we have work arounds.
+to time critical IO but we have a workaround.
 
 I picked the Raspberry Pi 3B+. It is less power than the Pi 4 and will
 fit the mounting holes provided. It is running headless [Raspberry Pi OS

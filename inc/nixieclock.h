@@ -111,10 +111,8 @@ static inline void notifyToTerminate(void)
 	terminate.kill = true;
     pthread_mutex_unlock(&terminate.mutex);
 }
-bool isDaemon(void);
 
 void *timeTask(void *threadid);
 void *ledTask(void *threadid);
-void errprint(const char *format, ...);
 ledrollhead_t *parseconfig(void);
 #endif /* __NIXIECLOCK_H__ */

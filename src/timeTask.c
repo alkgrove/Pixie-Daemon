@@ -136,7 +136,7 @@ void *timeTask(void *threadid)
     spifd = spi_open();
     gpiomap = gpio_open();
     if (gpiomap == NULL) {
-        errprint("Failed to open GPIO");
+        fprintf(stderr,"Failed to open GPIO\n");
         notifyToTerminate();
         pthread_exit((void *)EXIT_FAILURE);
     }
@@ -170,5 +170,4 @@ void *timeTask(void *threadid)
         if (done && isDaemon()) syslog(LOG_INFO, "done received time task");
     } 
     setNixie(spifd, gpiomap, LE, false, NULL); // clear nixie to clean up
-
 }
