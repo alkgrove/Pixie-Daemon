@@ -132,6 +132,7 @@ void *timeTask(void *threadid)
     time_t UTCtime;
     struct timespec currentTime, lastTime, remTime;
     uint8_t timestr[7];
+    bool col = false;
 
     spifd = spi_open();
     gpiomap = gpio_open();
@@ -154,7 +155,8 @@ void *timeTask(void *threadid)
         /* convert to local time and a string to send to nixie */
         loctime = localtime(&currentTime.tv_sec);
         strftime(timestr, sizeof(timestr), "%H%M%S", loctime);
-        setNixie(spifd, gpiomap, LE, true, timestr);
+        col = nextColon(col);
+        setNixie(spifd, gpiomap, LE, col, timestr);
         /* we are done get time stamp and wait close to end of the second */
         clock_gettime(CLOCK_REALTIME, &currentTime);        
         remTime.tv_sec = currentTime.tv_sec;

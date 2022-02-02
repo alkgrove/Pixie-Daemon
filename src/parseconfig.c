@@ -54,6 +54,7 @@
 
 #define INITIAL_TOKEN_COUNT 128
 #define TOKEN_COUNT_INCREMENT 128
+
 static bool jsoneq(const char *json, jsmntok_t *tok, const char *s) {
   return (tok->type == JSMN_STRING && strncmp(json + tok->start, s, tok->end - tok->start) == 0);
 }
@@ -101,24 +102,26 @@ ledrollhead_t *parseconfig(void)
     int32_t delay;
     char *endp;
     char *p;
-    int rv;
+    int errcount = 0;
     ledrollhead_t *ledrollhead;
+    ledrollhead_t *rv;
+    colonEnum_t col = COLON_ON;
     
     for (int i = 0; i < sizeof(pathfilename)/sizeof(char *); i++) {
         fin = fopen(pathfilename[i], "r");
         if (fin != NULL) {
             if (fseek(fin, 0, SEEK_END) < 0) {
                 fprintf(stderr, "failed to seek the open file %s\n", pathfilename[i]);
-                exit(EXIT_FAILURE);
+                return NULL;
             }
             filesize = ftell(fin);
             if (filesize < 0) {
                 fprintf(stderr, "bad file size returned for file: %s\n", pathfilename[i]);
-                exit(EXIT_FAILURE);
+                return NULL;
             }
             if (fseek(fin, 0L, SEEK_SET) < 0) {
                 fprintf(stderr, "unable to reset the open file %s\n", pathfilename[i]);
-                exit(EXIT_FAILURE);
+                return NULL;
             }
             fileindex = i;
             break;
@@ -126,16 +129,16 @@ ledrollhead_t *parseconfig(void)
     }
     if (fin == NULL) {
         fprintf(stderr, "unable to find a valid configuration file\n");
-        exit(EXIT_FAILURE);
+        return NULL;
     }
     filebuffer = (char *) malloc((filesize * sizeof(char)) + 1);
     if (filebuffer < 0) {
         fprintf(stderr, "unable to allocate memory for file %s\n", pathfilename[fileindex]);
-        exit(EXIT_FAILURE);
+        return NULL;
     }    
     if (fread(filebuffer, filesize, sizeof(char), fin) < 0) {
         fprintf(stderr, "unable to read config file %s\n", pathfilename[fileindex]);
-        exit(EXIT_FAILURE);
+        return NULL;
     }
     filebuffer[filesize] = '\0';
     fclose(fin);
@@ -144,7 +147,8 @@ ledrollhead_t *parseconfig(void)
     tokencount = INITIAL_TOKEN_COUNT;
     if (tokenp == NULL) {
         fprintf(stderr, "out of memory - config file to large\n");
-        exit(EXIT_FAILURE);
+        free(filebuffer);
+        return NULL;
     }
     while(!done) {
         rv = jsmn_parse(&jsonparser, filebuffer, filesize, tokenp, tokencount);
@@ -153,21 +157,25 @@ ledrollhead_t *parseconfig(void)
             tokenp = realloc(tokenp, tokencount * sizeof(jsmntok_t));
             if (tokenp == NULL) {
                 fprintf(stderr, "out of memory - config file to large\n");
-                exit(EXIT_FAILURE);
+                done = true;
             }
-        } else if (rv == JSMN_ERROR_INVAL) {
-            fprintf(stderr, "Invalid character in json\n");
-            exit(EXIT_FAILURE);
-        } else if (rv == JSMN_ERROR_PART) {
-            fprintf(stderr, "Incomplete or invalid json structure %d\n", rv);
-            exit(EXIT_FAILURE);
         } else {
             done = true;
+            if (rv == JSMN_ERROR_INVAL) {
+                fprintf(stderr, "Invalid character in json\n");
+            } else if (rv == JSMN_ERROR_PART) {
+                fprintf(stderr, "Incomplete or invalid json structure %d\n", rv);
+            }
         }
     }
     if (tokenp[0].type != JSMN_OBJECT) {
         fprintf(stderr, "Invalid json - must start as an object\n");
-        exit(EXIT_FAILURE);
+        rv = -1;
+    }
+    if (rv != 0) {
+        free(filebuffer);
+        if (tokenp != NULL) free(tokenp);
+        return NULL;
     }
     tidx = 1;
     for (int topobj = 0; topobj < tokenp[0].size; topobj++) {
@@ -176,7 +184,7 @@ ledrollhead_t *parseconfig(void)
             tidx++;
             if (tokenp[tidx].type != JSMN_OBJECT || tokenp[tidx].size == 0) {
                 fprintf(stderr, "Expected object for system key\n");
-                exit(EXIT_FAILURE);
+                return NULL;
             }
             recordcount = tokenp[tidx++].size;
             for (int i = 0; i < recordcount; i++) {
@@ -185,40 +193,60 @@ ledrollhead_t *parseconfig(void)
                     level = strtol(&filebuffer[tokenp[tidx].start], &endp, 10);
                     if (tokenp[tidx].type != JSMN_PRIMITIVE || &filebuffer[tokenp[tidx].start] == endp || level < 0 || level > 100) {
                         fprintf(stderr, "invalid system level value\n");
-                        exit(EXIT_FAILURE);
+                        errcount++;
+                        break;
                     }
                     tidx++;
+                } else if (jsoneq(filebuffer, &tokenp[tidx], "colon") && tokenp[tidx].size == 1) {
+                    tidx++;
+                    if (jsoneq(filebuffer, &tokenp[tidx], "off"]) && token[tidx].size == 1) {
+                        col = COLON_OFF;
+                    } else if (jsoneq(filebuffer, &tokenp[tidx], "blink"]) && token[tidx].size == 1) {
+                        col = COLON_BLINK;
+                    } else if (jsoneq(filebuffer, &tokenp[tidx], "on"]) && token[tidx].size == 1) {
+                        col = COLON_ON;
+                    } else {
+                        fprintf(stderr, "invalid colon value\n");
+                        errcount++;
+                        break;
+                    }
                 } else {
                     fprintf(stderr, "invalid key for system\n");
-                    exit(EXIT_FAILURE);
+                    errcount++;
+                    break;
                 }
             }      
         } else if (jsoneq(filebuffer,&tokenp[tidx], "roll")) {
             tidx++; //past LED key (optional)
             if (tokenp[tidx].type != JSMN_ARRAY || tokenp[tidx].size == 0) {
                 fprintf(stderr, "Expected array for all color records\n");
-                exit(EXIT_FAILURE);
+                errcount++;
+                break;
             }
             recordcount = tokenp[tidx++].size;
             ledroll = (ledroll_t *) malloc(recordcount * sizeof(ledroll_t));
             if (ledroll == NULL) {
                 fprintf(stderr, "Out of memory building config\n");
-                exit(EXIT_FAILURE);
+                errcount++;
+                break;
             }
             ledrollhead = (ledrollhead_t *) malloc(sizeof(ledrollhead_t));
             if (ledrollhead == NULL) {
                 fprintf(stderr, "Out of memory building config\n");
-                exit(EXIT_FAILURE);
+                errcount++;
+                break;
             }
             ledrollhead->roll = ledroll;
             ledrollhead->pos = 0;
+            ledrollhead->colon = col;
             ledrollhead->count = recordcount;
             fast = true;
             delay = 1000; // default is 1 second (1000ms)
             for (int i = 0; i < recordcount; i++) {
                 if (tokenp[tidx].type != JSMN_OBJECT || tokenp[tidx].size == 0) {
                     fprintf(stderr, "Record #%d must be an object and have {}'s\n", i+1);
-                    exit(EXIT_FAILURE);
+                    errcount++;
+                    break;
                 }
                 itemcount = tokenp[tidx++].size;
                 for (int j = 0; j < itemcount; j++) {
@@ -230,7 +258,8 @@ ledrollhead_t *parseconfig(void)
                             fast = true;
                         } else {
                             fprintf(stderr, "step has invalid value, should be fast or slow\n");
-                            exit(EXIT_FAILURE);
+                            errcount++;
+                            break;
                         }
                         tidx++;
                     } else if (jsoneq(filebuffer, &tokenp[tidx], "delay") && tokenp[tidx].size == 1) {
@@ -238,11 +267,13 @@ ledrollhead_t *parseconfig(void)
                         delay = strtol(&filebuffer[tokenp[tidx].start], &endp, 10);
                         if (tokenp[tidx].type != JSMN_PRIMITIVE || &filebuffer[tokenp[tidx].start] == endp) {
                             fprintf(stderr, "invalid delay value for record #%d\n", i);
-                            exit(EXIT_FAILURE);
+                            errcount++;
+                            break;
                         }
                         if (delay < INTERPOLATE_STEP) {
                             fprintf(stderr, "Record #%d delay is too small, should be >= %dms\n", i+1, INTERPOLATE_STEP);
-                            exit(EXIT_FAILURE);
+                            errcount++;
+                            break;
                         }
                          
                         tidx++;
@@ -250,18 +281,21 @@ ledrollhead_t *parseconfig(void)
                         tidx++;
                         if (tokenp[tidx].type != JSMN_ARRAY) {
                             fprintf(stderr, "expected an array for color record #%d\n", i+1);
-                            exit(EXIT_FAILURE);
+                            errcount++;
+                            break;
                         }
                         if (tokenp[tidx].size != LEDCOUNT) {
                             fprintf(stderr, "array size for LED is wrong for record #%d\n", i+1);
-                            exit(EXIT_FAILURE);
+                            errcount++;
+                            break;
                         }
             
                         tidx++;
                         for(int k = 0; k < LEDCOUNT; k++) {
                             if (tokenp[tidx].type != JSMN_STRING) {
                                 fprintf(stderr, "record #%d color array #%d needs to be hexadecimal string\n", i+1, k+1);
-                                exit(EXIT_FAILURE);
+                                errcount++;
+                                break;
                             }
                             p = &filebuffer[tokenp[tidx].start];
                             ledroll[i].color[k] = levelAdjust(strtol((*p == '#') ? p+1 : p, &endp, 16), level);
@@ -271,10 +305,22 @@ ledrollhead_t *parseconfig(void)
                     ledroll[i].isFast = fast;
                     ledroll[i].delay = delay;
                 }
+                if (errcount > 0) break;
             }
         } else {
             fprintf(stderr, "expected roll key or system key\n");
-            exit(EXIT_FAILURE);
+            errcount++;
+            break;
+        }
+        if (errcount > 0) break;
+    }
+    if (errcount > 0) {
+        if (ledrollhead != NULL) {
+            free(ledrollhead);
+            ledrollhead = NULL;
+        }
+        if (ledroll != NULL) {
+            free(ledroll);
         }
     }
     free(filebuffer);

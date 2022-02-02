@@ -45,7 +45,18 @@
 terminate_t terminate = {.mutex = PTHREAD_MUTEX_INITIALIZER, .kill = false};
 static struct sigaction new_action, old_action;
 
-ledrollhead_t *ledrollhead = NULL;
+colonEnum_t colon = COLON_ON;
+void setColon(bool thisColon) {
+    colon = thisColon;
+}
+
+bool nextColon(bool thisColon) 
+{
+    if (colon == COLON_ON) return true;
+    if (colon == COLON_BLINK) return !thisColon;
+    return false;
+}
+
 /* non-global */
 pthread_attr_t attributes;
 pthread_t timeThread;

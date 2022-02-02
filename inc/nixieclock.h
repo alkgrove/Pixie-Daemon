@@ -72,6 +72,8 @@
 #define CONSIDERATE_SLEEP 950000000L
 #define INTERPOLATE_STEP 25
 
+typedef enum {COLON_OFF = 0, COLON_BLINK, COLON_ON} colonEnum_t;
+
 typedef union {
     uint64_t ll;
     uint8_t b[8];
@@ -86,6 +88,7 @@ typedef struct {
 typedef struct {
     int32_t count;
     int32_t pos;
+    colonEnum_t colon;
     ledroll_t *roll;
 } ledrollhead_t;
 
@@ -111,6 +114,9 @@ static inline void notifyToTerminate(void)
 	terminate.kill = true;
     pthread_mutex_unlock(&terminate.mutex);
 }
+
+void setColon(bool thisColon);
+bool nextColon(bool thisColon);
 
 void *timeTask(void *threadid);
 void *ledTask(void *threadid);
