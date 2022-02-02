@@ -95,6 +95,7 @@ void *ledTask(void *threadid)
     int max;
     struct timespec stepDelay = {.tv_sec = 0, .tv_nsec = (INTERPOLATE_STEP * 1000000L) }; 
     struct timespec delay;
+    ledrollhead_t *ledrollhead;
     
     if ((rv = ws2811_init(&ledmodule)) != WS2811_SUCCESS) {
         fprintf(stderr,"ws2811_init failed: %s\n", ws2811_get_return_t_str(rv));

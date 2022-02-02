@@ -94,6 +94,7 @@ ledrollhead_t *parseconfig(void)
     int tidx;
     int tokencount = INITIAL_TOKEN_COUNT;
     bool done = false;
+    int rv;
     int recordcount;
     int itemcount;
     int level = 100;
@@ -104,7 +105,6 @@ ledrollhead_t *parseconfig(void)
     char *p;
     int errcount = 0;
     ledrollhead_t *ledrollhead;
-    ledrollhead_t *rv;
     colonEnum_t col = COLON_ON;
     
     for (int i = 0; i < sizeof(pathfilename)/sizeof(char *); i++) {
@@ -199,11 +199,11 @@ ledrollhead_t *parseconfig(void)
                     tidx++;
                 } else if (jsoneq(filebuffer, &tokenp[tidx], "colon") && tokenp[tidx].size == 1) {
                     tidx++;
-                    if (jsoneq(filebuffer, &tokenp[tidx], "off"]) && token[tidx].size == 1) {
+                    if (jsoneq(filebuffer, &tokenp[tidx], "off") && tokenp[tidx].size == 1) {
                         col = COLON_OFF;
-                    } else if (jsoneq(filebuffer, &tokenp[tidx], "blink"]) && token[tidx].size == 1) {
+                    } else if (jsoneq(filebuffer, &tokenp[tidx], "blink") && tokenp[tidx].size == 1) {
                         col = COLON_BLINK;
-                    } else if (jsoneq(filebuffer, &tokenp[tidx], "on"]) && token[tidx].size == 1) {
+                    } else if (jsoneq(filebuffer, &tokenp[tidx], "on") && tokenp[tidx].size == 1) {
                         col = COLON_ON;
                     } else {
                         fprintf(stderr, "invalid colon value\n");
