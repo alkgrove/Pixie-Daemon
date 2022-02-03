@@ -199,17 +199,18 @@ ledrollhead_t *parseconfig(void)
                     tidx++;
                 } else if (jsoneq(filebuffer, &tokenp[tidx], "colon") && tokenp[tidx].size == 1) {
                     tidx++;
-                    if (jsoneq(filebuffer, &tokenp[tidx], "off") && tokenp[tidx].size == 1) {
+                    if (jsoneq(filebuffer, &tokenp[tidx], "off")) {
                         col = COLON_OFF;
-                    } else if (jsoneq(filebuffer, &tokenp[tidx], "blink") && tokenp[tidx].size == 1) {
+                    } else if (jsoneq(filebuffer, &tokenp[tidx], "blink")) {
                         col = COLON_BLINK;
-                    } else if (jsoneq(filebuffer, &tokenp[tidx], "on") && tokenp[tidx].size == 1) {
+                    } else if (jsoneq(filebuffer, &tokenp[tidx], "on")) {
                         col = COLON_ON;
                     } else {
                         fprintf(stderr, "invalid colon value\n");
                         errcount++;
                         break;
                     }
+                    tidx++;
                 } else {
                     fprintf(stderr, "invalid key for system\n");
                     errcount++;

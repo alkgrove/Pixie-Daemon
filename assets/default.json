@@ -1,6 +1,7 @@
 {
     "system" : {
-      "level" : 50
+      "level" : 80,
+      "colon" : "blink"
     },
     
     "roll" : [   
