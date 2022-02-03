@@ -172,7 +172,7 @@ ledrollhead_t *parseconfig(void)
         fprintf(stderr, "Invalid json - must start as an object\n");
         rv = -1;
     }
-    if (rv != 0) {
+    if (rv < 0) {
         free(filebuffer);
         if (tokenp != NULL) free(tokenp);
         return NULL;
