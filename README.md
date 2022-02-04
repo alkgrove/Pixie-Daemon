@@ -1,4 +1,5 @@
 ###### PIXIE DAEMON - Using the Raspberry Pi as a nixie clock
+Status: Compiles, tested
 
 I was given a set of nixie tubes long time ago as a gift and had a
 design for a clock but never got to the point of laying it out. I found
@@ -11,7 +12,7 @@ they had a Pi Shield, which does all of the necessary Pi to Arduino
 level shifting. Unfortunately none of their cases will fit the raspberry
 pi.
 
-I wanted the Raspberry Pi because Linux makes a pretty good clock. it
+I wanted the Raspberry Pi because Linux makes a good clock. it
 supports NTP to set and keep the time accurate and a timezone database.
 Once it is set up, I shouldn't have to set the time again and it should
 keep good time. The Pi does has some disadvantages. It isn't well suited
@@ -281,7 +282,7 @@ slow need to be in 25millisecond increments.
 ##### Starting the daemon
 
 I would suggest starting the display using the command line especially
-if trying a new LED color table. This is done with the command:
+if trying a new LED color table so you can see any errors. This is done with the command:
 ```
 
 sudo /usr/local/bin/pixied
@@ -301,3 +302,6 @@ The nixie clock can be started manually with **sudo service pixied start**.
 Manually stop the daemon with **sudo service pixied stop**. This may take a minute or more.
 
 To see the daemon status use **sudo systemctl status pixied**.
+Originally, this was written with the double forking daemon of old, of which, systemd can do quite odd and disturbing things to your daemon. 
+So I removed it to be a simple style daemon. Good luck with that.
+
